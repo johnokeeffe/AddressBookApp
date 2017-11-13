@@ -2,22 +2,18 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+//users can edit a contact at this page
 public class EditContact {
 
 	JFrame frame;
-	private String username;
-	private String contactName;
-	private String address1;
-	private String address2;
-	private String address3;
-	private String address4;
-	private String oldEmail;
-	private int oldTelno;
+	private AddressBook oldAddressBook = new AddressBook();
+	private User user = new User();
 	
 	private JTextField txtName;
 	private JTextField txtTelno;
@@ -49,29 +45,19 @@ public class EditContact {
 	public EditContact() {
 		initialize();
 	}
-	public EditContact(String user) {
-		initialize();
-		username = user;
-	}
+	
 	public EditContact(AddressBook addBook) {
 		initialize();
-		
-		username = addBook.username;
-		contactName = addBook.contactName;
-		address1 = addBook.address1;
-		address2 = addBook.address2;
-		address3 = addBook.address3;
-		address4 = addBook.address4;
-		oldEmail = addBook.email;
-		oldTelno = addBook.telno;
-				
-		txtName.setText(addBook.contactName);
-		txtAddress1.setText(addBook.address1);
-		txtAddress2.setText(addBook.address2);
-		txtAddress3.setText(addBook.address3);
-		txtAddress4.setText(addBook.address4);
-		txtEmail.setText(addBook.email);
-		String strTelno = String.valueOf(addBook.telno);
+		user.setUsername(addBook.getUsername());
+		oldAddressBook = addBook;
+			
+		txtName.setText(addBook.getContactName());
+		txtAddress1.setText(addBook.getAddress1());
+		txtAddress2.setText(addBook.getAddress2());
+		txtAddress3.setText(addBook.getAddress3());
+		txtAddress4.setText(addBook.getAddress4());
+		txtEmail.setText(addBook.getEmail());
+		String strTelno = String.valueOf(addBook.getTelno());
 		txtTelno.setText(strTelno);
 
 	}
@@ -84,6 +70,7 @@ public class EditContact {
 		frame.setBounds(100, 100, 299, 346);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		frame.setTitle("Edit Contact");
 		
 		JLabel label = new JLabel("Name");
 		label.setBounds(10, 14, 102, 14);
@@ -151,6 +138,7 @@ public class EditContact {
 		JButton btnSave = new JButton("Save Changes");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				//get the new contact details
 				String name = txtName.getText();
 				String add1 = txtAddress1.getText();
 				String add2 = txtAddress2.getText();
@@ -158,15 +146,45 @@ public class EditContact {
 				String add4 = txtAddress4.getText();
 				String email = txtEmail.getText();
 				String strTelno = txtTelno.getText();
+				try {
+					int telno = Integer.parseInt(strTelno);
+					
+					AddressBook newAddBook = new AddressBook(user.getUsername(), name, 
+							add1, add2, add3, add4, email, telno);
+					
+					SQLiteDB db = new SQLiteDB();
+					boolean success = db.editContact(oldAddressBook, newAddBook);
+					if(success) {
+						JOptionPane.showMessageDialog(null, "Details updated!", "Success", JOptionPane.WARNING_MESSAGE);
+						//return to the user home page
+						frame.dispose();
+						UserHome userHome = new UserHome(user.getUsername());
+						userHome.frame.setVisible(true);
+					}else {
+						JOptionPane.showMessageDialog(null, "Error updating details. Ensure all fields have "
+								+ "been entered correctly!", "Error", JOptionPane.WARNING_MESSAGE);
+					}
+				}catch(Exception ex) {
+					JOptionPane.showMessageDialog(null, "Phone number may only contain numbers",
+							"Error", JOptionPane.WARNING_MESSAGE);
+				}
 				int telno = Integer.parseInt(strTelno);
-				AddressBook newAddBook = new AddressBook(username, name, add1, add2, add3, add4, email, telno);
-				AddressBook oldAddBook = new AddressBook(username, contactName, address1, address2, address3, address4, oldEmail, oldTelno);
-				SQLiteDB db = new SQLiteDB();
-				db.editContact(oldAddBook, newAddBook);
 				
-				frame.dispose();
-				UserHome userHome = new UserHome(username);
-				userHome.frame.setVisible(true);
+				AddressBook newAddBook = new AddressBook(user.getUsername(), name, 
+						add1, add2, add3, add4, email, telno);
+				
+				SQLiteDB db = new SQLiteDB();
+				boolean success = db.editContact(oldAddressBook, newAddBook);
+				if(success) {
+					JOptionPane.showMessageDialog(null, "Details updated!", "Success", JOptionPane.WARNING_MESSAGE);
+					//return to the user home page
+					frame.dispose();
+					UserHome userHome = new UserHome(user.getUsername());
+					userHome.frame.setVisible(true);
+				}else {
+					JOptionPane.showMessageDialog(null, "Error updating details. Ensure all fields have "
+							+ "been entered correctly!", "Error", JOptionPane.WARNING_MESSAGE);
+				}
 			}
 		});
 		btnSave.setBounds(54, 233, 158, 23);
@@ -175,8 +193,9 @@ public class EditContact {
 		JButton button_1 = new JButton("Cancel");
 		button_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				//return to the user home page
 				frame.dispose();
-				UserHome userHome = new UserHome(username);
+				UserHome userHome = new UserHome(user.getUsername());
 				userHome.frame.setVisible(true);
 			}
 		});

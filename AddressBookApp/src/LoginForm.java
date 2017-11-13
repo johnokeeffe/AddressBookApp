@@ -3,13 +3,16 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+//users login at this window
 public class LoginForm {
 
 	JFrame frame;
+	private User user = new User();
 	private JTextField txtUsername;
 	private JTextField txtPassword;
 	private JButton btnNewUser;
@@ -45,6 +48,7 @@ public class LoginForm {
 		frame.setBounds(100, 100, 299, 244);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		frame.setTitle("Login");
 		
 		txtUsername = new JTextField();
 		txtUsername.setBounds(130, 47, 128, 20);
@@ -67,21 +71,31 @@ public class LoginForm {
 		JButton btnLogin = new JButton("Login");
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String username = txtUsername.getText();
-				String password = txtPassword.getText();
-				
-				SQLiteDB db = new SQLiteDB();
-				boolean loginSuccess = db.login(username, password);
-				
-				if(loginSuccess) {
-					System.out.println("logged in!!");
-					frame.dispose();
-					UserHome userHome = new UserHome(username);
-					userHome.frame.setVisible(true);
+				//check that all fields have been entered
+				user.setUsername(txtUsername.getText());
+				user.setPassword(txtPassword.getText());
+				if(user.getUsername().equals("") || user.getPassword().equals("")) {
+					JOptionPane.showMessageDialog(null, "Please enter a username and password!", "Error", JOptionPane.WARNING_MESSAGE);
 				}else {
-					System.out.println("error logging in");
+					
+					
+					
+					SQLiteDB db = new SQLiteDB();
+					boolean loginSuccess = db.login(user);
+					
+					if(loginSuccess) {
+						db.closeConnection();
+						frame.dispose();
+						//go to the user home window
+						UserHome userHome = new UserHome(user.getUsername());
+						userHome.frame.setVisible(true);
+					}else {
+						JOptionPane.showMessageDialog(null, "Incorrect login details!", "Error",
+								JOptionPane.WARNING_MESSAGE);
+					}
 				}
-				db.closeConnection();
+				
+				
 			}
 			
 		});
@@ -91,6 +105,7 @@ public class LoginForm {
 		btnNewUser = new JButton("New User");
 		btnNewUser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				//go to the register user window
 				frame.dispose();
 				NewUser newUser = new NewUser();
 				newUser.frame.setVisible(true);

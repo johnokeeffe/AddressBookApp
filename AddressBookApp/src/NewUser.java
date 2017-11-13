@@ -6,10 +6,12 @@ import javax.swing.JTextField;
 import org.omg.PortableServer.ServantRetentionPolicyValue;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+//A new user can register at this window
 public class NewUser {
 
 	JFrame frame;
@@ -26,6 +28,7 @@ public class NewUser {
 				try {
 					NewUser window = new NewUser();
 					window.frame.setVisible(true);
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -48,6 +51,8 @@ public class NewUser {
 		frame.setBounds(100, 100, 300, 273);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		frame.setTitle("Register");
+
 		
 		txtUsername = new JTextField();
 		txtUsername.setBounds(118, 30, 144, 20);
@@ -64,30 +69,41 @@ public class NewUser {
 		frame.getContentPane().add(lblUsername);
 		
 		JLabel lblPassword = new JLabel("Password");
-		lblPassword.setBounds(22, 75, 46, 14);
+		lblPassword.setBounds(22, 75, 86, 14);
 		frame.getContentPane().add(lblPassword);
 		
 		JButton btnRegister = new JButton("Register");
 		btnRegister.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String username = txtUsername.getText();
-				String password = txtPassword.getText();
+				User user = new User(txtUsername.getText(), txtPassword.getText());
+				
 				
 				//check user name availability
 				SQLiteDB db = new SQLiteDB();
-				boolean usernameAvailable = db.usernameAvailable(username);
+				boolean usernameAvailable = db.usernameAvailable(user.getUsername());
 				
-				if(usernameAvailable) {
-					db.registerUser(username, password);
-					System.out.println("Registered Successfully, you can now log in!!");
-					frame.dispose();
-					LoginForm loginForm = new LoginForm();
-					loginForm.frame.setVisible(true);
-					
+				if(user.getUsername() == null || user.getPassword() == null) {
+					JOptionPane.showMessageDialog(null, "Please enter a username and a "
+							+ "password.", "Error", JOptionPane.WARNING_MESSAGE);
+
+				}else if(usernameAvailable) {
+					//add the new user to the db
+					boolean success = db.registerUser(user);
+					db.closeConnection();
+					if(success) {
+						//go to the login page
+						frame.dispose();
+						LoginForm loginForm = new LoginForm();
+						loginForm.frame.setVisible(true);
+						JOptionPane.showMessageDialog(null, "Registered Successfully! You can now login using your username and password.", "Success", JOptionPane.WARNING_MESSAGE);
+
+					}else {
+						JOptionPane.showMessageDialog(null, "Error registering, please check that all fields have been entered correctly.", "Error", JOptionPane.WARNING_MESSAGE);
+
+					}
 				}else {
-					System.out.println("This username already exists!!");
+					JOptionPane.showMessageDialog(null, "This username already exists!", "Error", JOptionPane.WARNING_MESSAGE);
 				}
-				db.closeConnection();
 				
 				
 			}
@@ -99,6 +115,7 @@ public class NewUser {
 		btnCancel = new JButton("Cancel");
 		btnCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				//return to the login page
 				frame.dispose();
 				LoginForm loginForm = new LoginForm();
 				loginForm.frame.setVisible(true);

@@ -3,10 +3,12 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+//users can add a new contact at this page
 public class AddContact {
 
 	JFrame frame;
@@ -29,6 +31,7 @@ public class AddContact {
 				try {
 					AddContact window = new AddContact();
 					window.frame.setVisible(true);
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -56,6 +59,7 @@ public class AddContact {
 		frame.setBounds(100, 100, 347, 369);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		frame.setTitle("Add Contact");
 		
 		txtName = new JTextField();
 		txtName.setBounds(147, 34, 144, 20);
@@ -123,19 +127,35 @@ public class AddContact {
 		JButton btnAddContact = new JButton("Add Contact");
 		btnAddContact.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int telno = Integer.parseInt(txtTelno.getText());
-				AddressBook addBook = new AddressBook(
-						username, txtName.getText(), 
-						txtAddress1.getText(), txtAddress2.getText(),
-						txtAddress3.getText(), txtAddress4.getText(),
-						txtEmail.getText(), telno);
+				//add the new contact to the db
+				try {
+					int telno = Integer.parseInt(txtTelno.getText());
+					AddressBook addBook = new AddressBook(
+							username, txtName.getText(), 
+							txtAddress1.getText(), txtAddress2.getText(),
+							txtAddress3.getText(), txtAddress4.getText(),
+							txtEmail.getText(), telno);
+					
+					SQLiteDB db = new SQLiteDB();
+					boolean success = db.addContact(addBook);
+					if(success) {
+						JOptionPane.showMessageDialog(null, "Contact Added!",
+								"Success", JOptionPane.WARNING_MESSAGE);
+						db.closeConnection();
+						frame.dispose();
+						UserHome userHome = new UserHome(username);
+						userHome.frame.setVisible(true);
+					}else {
+						JOptionPane.showMessageDialog(null, "Error adding contact. Ensure all fields have "
+								+ "been entered correctly!", "Error", JOptionPane.WARNING_MESSAGE);
+					}
 				
-				SQLiteDB db = new SQLiteDB();
-				db.addContact(addBook);
-
-				frame.dispose();
-				UserHome userHome = new UserHome(username);
-				userHome.frame.setVisible(true);
+				}catch(Exception ex){
+					JOptionPane.showMessageDialog(null, "Phone number may only contain numbers",
+							"Error", JOptionPane.WARNING_MESSAGE);
+					
+				}
+					
 			}
 		});
 		btnAddContact.setBounds(79, 256, 158, 23);
