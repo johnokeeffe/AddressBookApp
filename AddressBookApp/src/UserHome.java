@@ -196,10 +196,6 @@ public class UserHome {
 				try {
 					String findName = txtFind.getText();
 	
-					//String query = "SELECT * FROM CONTACTS WHERE USERNAME = '"
-					//		+ user.getUsername() + "' AND CONTACTNAME LIKE '" + findName +  "%'"
-					//				+ " ORDER BY CONTACTNAME";
-					
 					SQLiteDB db = new SQLiteDB();
 					ResultSet rs = db.findContact(user.getUsername(), findName);
 					//db.closeConnection();

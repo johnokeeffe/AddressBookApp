@@ -1,5 +1,8 @@
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.junit.jupiter.api.Test;
 
 class AddressBookTests {
@@ -46,16 +49,16 @@ class AddressBookTests {
 		
 	}
 	
-	/*
+	
 	@Test
 	void registerUserTest() {
 		//register a new user test
-		user.setUsername("NewUser1");
+		user.setUsername("NewUser");
 		user.setPassword("pass");
 		assertTrue(db.registerUser(user));
 		
 	}
-	*/
+	
 	
 	@Test
 	void addContactTest() {
@@ -76,5 +79,30 @@ class AddressBookTests {
 	}
 	
 	
+	@Test
+	void viewAllTest() throws SQLException {
+		//view all test
+		ResultSet rs = db.viewAll("TM");
+		int counter = 0;
+		while(rs.next()) {
+			counter++;
+		}
+		//assert that all 3 of TM's contacts are retrieved
+		assertEquals(3, counter);
+		
+	}
+	
+	@Test
+	void findTest() throws SQLException {
+		//view all test
+		ResultSet rs = db.findContact("TM", "J");
+		int counter = 0;
+		while(rs.next()) {
+			counter++;
+		}
+		//assert that both of TM's contacts that begin with J are retrieved
+		assertEquals(2, counter);
+		
+	}
 
 }
